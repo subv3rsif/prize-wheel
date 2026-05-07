@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Wheel } from '@/app/_components/Wheel'
+import { HalfWheel } from '@/app/_components/HalfWheel'
 import { WinnerOverlay } from '@/app/_components/WinnerOverlay'
 import { LossMessage } from '@/app/_components/LossMessage'
 import { SoundManagerProvider, useSoundManager } from '@/lib/sounds/SoundManager'
@@ -125,21 +125,21 @@ function DisplayContent() {
   }
 
   return (
-    <div className="relative min-h-screen w-screen carnival-bg flex flex-col items-center justify-center overflow-hidden">
+    <div className="relative min-h-screen w-screen carnival-bg flex flex-col overflow-hidden">
       {/* Decorative top banner */}
-      <div className="absolute top-0 left-0 right-0 h-24 flex items-center justify-center z-10">
+      <div className="relative h-20 flex items-center justify-center z-10 border-b-2 border-white/10">
         <div className="relative">
-          <h1 className="heading-circus text-5xl neon-text-orange tracking-widest px-8">
+          <h1 className="heading-circus text-4xl md:text-5xl neon-text-orange tracking-widest px-8">
             PRIZE WHEEL
           </h1>
-          <div className="absolute -top-2 -right-2 w-20 h-20 rounded-full bg-yellow-400 opacity-20 blur-2xl animate-pulse" />
-          <div className="absolute -bottom-2 -left-2 w-20 h-20 rounded-full bg-cyan-400 opacity-20 blur-2xl animate-pulse" style={{ animationDelay: '0.5s' }} />
+          <div className="absolute -top-2 -right-2 w-16 h-16 rounded-full bg-yellow-400 opacity-20 blur-2xl animate-pulse" />
+          <div className="absolute -bottom-2 -left-2 w-16 h-16 rounded-full bg-cyan-400 opacity-20 blur-2xl animate-pulse" style={{ animationDelay: '0.5s' }} />
         </div>
       </div>
 
-      {/* Main wheel */}
-      <div className="relative z-10">
-        <Wheel
+      {/* Half wheel at top */}
+      <div className="relative flex-shrink-0 pt-6">
+        <HalfWheel
           segments={segments}
           isSpinning={isSpinning}
           targetAngle={targetAngle}
@@ -147,13 +147,53 @@ function DisplayContent() {
         />
       </div>
 
-      {/* Decorative corner accents */}
-      <div className="absolute top-8 left-8 w-32 h-32 border-l-4 border-t-4 border-cyan-400/30 rounded-tl-3xl" />
-      <div className="absolute top-8 right-8 w-32 h-32 border-r-4 border-t-4 border-magenta-400/30 rounded-tr-3xl" />
-      <div className="absolute bottom-8 left-8 w-32 h-32 border-l-4 border-b-4 border-orange-400/30 rounded-bl-3xl" />
-      <div className="absolute bottom-8 right-8 w-32 h-32 border-r-4 border-b-4 border-purple-400/30 rounded-br-3xl" />
+      {/* Content area below wheel */}
+      <div className="relative flex-1 flex items-center justify-center px-8 pb-8">
+        <div className="w-full max-w-4xl">
+          {/* Result display area */}
+          {winningSegment && showOverlay ? (
+            <div className="text-center">
+              <div className="mb-8">
+                <div className="inline-block px-12 py-6 rounded-3xl border-4 border-yellow-400 bg-gradient-to-br from-orange-500 to-pink-600"
+                  style={{
+                    boxShadow: '0 0 50px rgba(255,238,50,0.7), inset 0 0 30px rgba(255,255,255,0.3)',
+                  }}
+                >
+                  <div className="text-7xl mb-4">{showOverlay === 'winner' ? '🎉' : '✨'}</div>
+                  <h2 className="heading-circus text-6xl text-white mb-4"
+                    style={{
+                      textShadow: '0 0 30px rgba(255,238,50,0.9), 0 4px 10px rgba(0,0,0,0.8)',
+                    }}
+                  >
+                    {winningSegment}
+                  </h2>
+                  <p className="text-2xl text-white/90 font-bold">
+                    {showOverlay === 'winner' ? '🎁 FÉLICITATIONS !' : 'Merci de participer !'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="text-8xl mb-6 animate-pulse">🎡</div>
+              <h2 className="heading-circus text-5xl neon-text-cyan mb-4">
+                EN ATTENTE
+              </h2>
+              <p className="text-2xl text-white/70 font-semibold">
+                Prêt à tourner la roue...
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
 
-      {/* Overlays */}
+      {/* Decorative corner accents */}
+      <div className="absolute top-24 left-8 w-24 h-24 border-l-4 border-t-4 border-cyan-400/30 rounded-tl-3xl pointer-events-none" />
+      <div className="absolute top-24 right-8 w-24 h-24 border-r-4 border-t-4 border-magenta-400/30 rounded-tr-3xl pointer-events-none" />
+      <div className="absolute bottom-8 left-8 w-24 h-24 border-l-4 border-b-4 border-orange-400/30 rounded-bl-3xl pointer-events-none" />
+      <div className="absolute bottom-8 right-8 w-24 h-24 border-r-4 border-b-4 border-purple-400/30 rounded-br-3xl pointer-events-none" />
+
+      {/* Full screen overlays */}
       {showOverlay === 'winner' && (
         <WinnerOverlay segmentLabel={winningSegment} />
       )}

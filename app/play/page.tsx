@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { drawPrize } from '@/app/actions/wheel'
 import { createClient } from '@/lib/supabase/client'
-import { Wheel } from '@/app/_components/Wheel'
+import { HalfWheel } from '@/app/_components/HalfWheel'
 
 interface Segment {
   id: string
@@ -127,23 +127,23 @@ export default function PlayPage() {
 
   return (
     <div
-      className="relative flex flex-col items-center justify-center min-h-screen carnival-bg overflow-hidden"
+      className="relative flex flex-col min-h-screen carnival-bg overflow-hidden"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
       {/* Title banner */}
-      <div className="absolute top-6 left-0 right-0 flex flex-col items-center z-10 pointer-events-none">
-        <h1 className="heading-circus text-4xl md:text-5xl neon-text-orange mb-2">
+      <div className="relative h-16 flex items-center justify-center z-10 border-b border-white/10">
+        <h1 className="heading-circus text-3xl md:text-4xl neon-text-orange">
           PRIZE WHEEL
         </h1>
-        <p className="text-base md:text-lg text-white/60 font-semibold tracking-wide">
-          {isSpinning ? '⚡ En rotation...' : 'Touchez le bouton pour jouer'}
+        <p className="absolute right-6 text-sm text-white/60 font-semibold">
+          {isSpinning ? '⚡ En rotation...' : 'Mode Tactile'}
         </p>
       </div>
 
-      {/* Wheel Display */}
-      <div className="relative z-10 scale-75 md:scale-90 lg:scale-100">
-        <Wheel
+      {/* Half Wheel Display */}
+      <div className="relative flex-shrink-0 pt-4">
+        <HalfWheel
           segments={segments}
           isSpinning={isSpinning}
           targetAngle={targetAngle}
@@ -151,69 +151,70 @@ export default function PlayPage() {
         />
       </div>
 
-      {/* SPIN button - positioned over wheel center */}
-      <button
-        onClick={handleSpin}
-        disabled={isSpinning}
-        className="absolute z-30 disabled:cursor-not-allowed group touch-manipulation"
-        style={{
-          WebkitTapHighlightColor: 'transparent',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-        }}
-      >
-        {/* Outer glow ring */}
-        {!isSpinning && (
-          <div className="absolute -inset-6 rounded-full blur-2xl opacity-60 pointer-events-none">
-            <div className="w-full h-full bg-gradient-to-br from-orange-500 via-pink-500 to-purple-500 rounded-full animate-pulse" />
-          </div>
-        )}
-
-        {/* Button surface */}
-        <div className={`relative w-32 h-32 md:w-40 md:h-40 rounded-full border-6 flex items-center justify-center transition-all duration-200 ${
-          isSpinning
-            ? 'border-cyan-400 bg-gradient-to-br from-[#1a0f2e] to-[#0a0118]'
-            : 'border-yellow-300 bg-gradient-to-br from-orange-500 via-pink-600 to-purple-600 active:scale-90'
-        }`}
-          style={{
-            boxShadow: isSpinning
-              ? '0 0 40px rgba(0,240,255,0.9), 0 0 80px rgba(0,240,255,0.6), inset 0 0 25px rgba(0,240,255,0.3)'
-              : '0 0 40px rgba(255,238,50,0.8), 0 0 70px rgba(255,107,53,0.6), inset 0 0 25px rgba(255,255,255,0.3), 0 8px 30px rgba(0,0,0,0.5)',
-          }}
+      {/* Control area with SPIN button */}
+      <div className="relative flex-1 flex flex-col items-center justify-center px-8 pb-12">
+        {/* SPIN button */}
+        <button
+          onClick={handleSpin}
+          disabled={isSpinning}
+          className="relative disabled:cursor-not-allowed group touch-manipulation mb-8"
+          style={{ WebkitTapHighlightColor: 'transparent' }}
         >
-          {isSpinning ? (
-            <div className="flex flex-col items-center gap-2">
-              <div className="text-4xl md:text-5xl animate-spin" style={{ animationDuration: '1.5s' }}>
-                ⚡
-              </div>
-            </div>
-          ) : (
-            <div className="heading-circus text-3xl md:text-4xl text-white tracking-wider select-none"
-              style={{
-                textShadow: '0 0 25px rgba(255,238,50,0.9), 0 4px 8px rgba(0,0,0,0.8), 0 0 50px rgba(255,107,53,0.7)',
-              }}
-            >
-              {buttonLabel}
+          {/* Outer glow ring */}
+          {!isSpinning && (
+            <div className="absolute -inset-8 rounded-full blur-3xl opacity-60 pointer-events-none">
+              <div className="w-full h-full bg-gradient-to-br from-orange-500 via-pink-500 to-purple-500 rounded-full animate-pulse" />
             </div>
           )}
-        </div>
-      </button>
 
-      {/* Instruction hint */}
-      <div className="absolute bottom-8 left-0 right-0 flex justify-center z-10 pointer-events-none px-4">
-        <div className="bg-black/40 backdrop-blur-sm border-2 border-yellow-400/40 rounded-full px-6 py-2">
-          <p className="text-sm md:text-base text-white/90 font-bold tracking-wide text-center">
-            ✨ Touchez le bouton au centre • Glissez vers le haut ↑
+          {/* Button surface */}
+          <div className={`relative w-48 h-48 md:w-56 md:h-56 rounded-full border-8 flex items-center justify-center transition-all duration-200 ${
+            isSpinning
+              ? 'border-cyan-400 bg-gradient-to-br from-[#1a0f2e] to-[#0a0118]'
+              : 'border-yellow-300 bg-gradient-to-br from-orange-500 via-pink-600 to-purple-600 active:scale-95'
+          }`}
+            style={{
+              boxShadow: isSpinning
+                ? '0 0 50px rgba(0,240,255,0.9), 0 0 100px rgba(0,240,255,0.6), inset 0 0 30px rgba(0,240,255,0.3)'
+                : '0 0 50px rgba(255,238,50,0.8), 0 0 90px rgba(255,107,53,0.6), inset 0 0 30px rgba(255,255,255,0.3), 0 10px 40px rgba(0,0,0,0.5)',
+            }}
+          >
+            {isSpinning ? (
+              <div className="flex flex-col items-center gap-3">
+                <div className="text-6xl md:text-7xl animate-spin" style={{ animationDuration: '1.5s' }}>
+                  ⚡
+                </div>
+                <div className="heading-circus text-2xl text-cyan-300"
+                  style={{ textShadow: '0 0 20px rgba(0,240,255,0.8)' }}
+                >
+                  EN COURS
+                </div>
+              </div>
+            ) : (
+              <div className="heading-circus text-5xl md:text-6xl text-white tracking-wider select-none"
+                style={{
+                  textShadow: '0 0 30px rgba(255,238,50,0.9), 0 5px 10px rgba(0,0,0,0.8), 0 0 60px rgba(255,107,53,0.7)',
+                }}
+              >
+                {buttonLabel}
+              </div>
+            )}
+          </div>
+        </button>
+
+        {/* Instructions */}
+        <div className="bg-black/30 backdrop-blur-sm border-2 border-yellow-400/30 rounded-2xl px-8 py-4 max-w-lg">
+          <p className="text-lg md:text-xl text-white/90 font-bold tracking-wide text-center">
+            ✨ Touchez le bouton • Glissez vers le haut ↑
           </p>
         </div>
       </div>
 
       {/* Decorative corner elements */}
-      <div className="absolute top-8 left-8 w-20 h-20 border-l-4 border-t-4 border-cyan-400/30 rounded-tl-3xl pointer-events-none" />
-      <div className="absolute top-8 right-8 w-20 h-20 border-r-4 border-t-4 border-magenta-400/30 rounded-tr-3xl pointer-events-none" />
-      <div className="absolute bottom-24 left-8 w-20 h-20 border-l-4 border-b-4 border-orange-400/30 rounded-bl-3xl pointer-events-none" />
-      <div className="absolute bottom-24 right-8 w-20 h-20 border-r-4 border-b-4 border-purple-400/30 rounded-br-3xl pointer-events-none" />
+      <div className="absolute top-20 left-8 w-20 h-20 border-l-4 border-t-4 border-cyan-400/30 rounded-tl-3xl pointer-events-none" />
+      <div className="absolute top-20 right-8 w-20 h-20 border-r-4 border-t-4 border-magenta-400/30 rounded-tr-3xl pointer-events-none" />
+      <div className="absolute bottom-8 left-8 w-20 h-20 border-l-4 border-b-4 border-orange-400/30 rounded-bl-3xl pointer-events-none" />
+      <div className="absolute bottom-8 right-8 w-20 h-20 border-r-4 border-b-4 border-purple-400/30 rounded-br-3xl pointer-events-none" />
     </div>
   )
 }
