@@ -26,7 +26,7 @@ interface Settings {
  * Draw a prize using weighted random selection with server-side lock
  */
 export async function drawPrize() {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   // 1. CHECK LOCK
   const { data: settings, error: settingsError } = await supabase
@@ -167,7 +167,7 @@ export async function updateSettings(data: {
   spin_duration_min?: number
   spin_duration_max?: number
 }) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { error } = await supabase
     .from('settings')
@@ -192,7 +192,7 @@ export async function createSegment(data: {
   is_prize: boolean
   display_order: number
 }) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   if (data.probability <= 0) {
     return { error: 'Probability must be greater than 0' }
@@ -222,7 +222,7 @@ export async function updateSegment(id: string, data: {
   is_active?: boolean
   display_order?: number
 }) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   if (data.probability !== undefined && data.probability <= 0) {
     return { error: 'Probability must be greater than 0' }
@@ -246,7 +246,7 @@ export async function updateSegment(id: string, data: {
  * Delete segment
  */
 export async function deleteSegment(id: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { error } = await supabase
     .from('segments')
@@ -266,7 +266,7 @@ export async function deleteSegment(id: string) {
  * Upload logo to Supabase Storage
  */
 export async function uploadLogo(formData: FormData) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const file = formData.get('logo') as File
 
   if (!file) {
