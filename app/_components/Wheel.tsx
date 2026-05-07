@@ -66,6 +66,27 @@ export function Wheel({ segments, isSpinning, targetAngle, spinDuration = 6000 }
         />
       </div>
 
+      {/* Floating sparkles */}
+      {Array.from({ length: 12 }, (_, i) => {
+        const angle = (i * 360) / 12
+        const distance = 350
+        const x = Math.cos((angle * Math.PI) / 180) * distance
+        const y = Math.sin((angle * Math.PI) / 180) * distance
+        return (
+          <div
+            key={i}
+            className="absolute w-2 h-2 rounded-full bg-yellow-300 animate-pulse pointer-events-none z-0"
+            style={{
+              left: `calc(50% + ${x}px)`,
+              top: `calc(50% + ${y}px)`,
+              boxShadow: '0 0 15px rgba(255,238,50,0.8)',
+              animationDelay: `${i * 0.15}s`,
+              animationDuration: '2s',
+            }}
+          />
+        )
+      })}
+
       {/* Fixed pointer at top - enhanced with neon */}
       <div className="absolute top-2 z-30 flex flex-col items-center">
         <div
@@ -119,6 +140,20 @@ export function Wheel({ segments, isSpinning, targetAngle, spinDuration = 6000 }
               <stop offset="100%" stopColor="#1a0f2e" />
             </radialGradient>
 
+            {/* Segment shine gradients - for each segment */}
+            {segments.map((segment, index) => (
+              <radialGradient
+                key={`shine-${segment.id}`}
+                id={`segmentShine-${index}`}
+                cx="30%"
+                cy="30%"
+              >
+                <stop offset="0%" stopColor="rgba(255,255,255,0.4)" />
+                <stop offset="50%" stopColor="rgba(255,255,255,0.1)" />
+                <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+              </radialGradient>
+            ))}
+
             {/* Glow filter */}
             <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
@@ -140,36 +175,79 @@ export function Wheel({ segments, isSpinning, targetAngle, spinDuration = 6000 }
                 <feMergeNode in="SourceGraphic"/>
               </feMerge>
             </filter>
+
+            {/* Glossy overlay filter */}
+            <filter id="glossy">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+              <feOffset dx="0" dy="-2" result="offsetblur"/>
+              <feFlood floodColor="white" floodOpacity="0.3"/>
+              <feComposite in2="offsetblur" operator="in"/>
+              <feMerge>
+                <feMergeNode/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
           </defs>
 
           <g transform="translate(325, 325)">
-            {/* Outer neon ring - animated */}
+            {/* Outer decorative rings - multiple layers */}
             <circle
               cx="0"
               cy="0"
-              r="310"
+              r="315"
               fill="none"
               stroke="url(#neonRing1)"
-              strokeWidth="12"
-              opacity="0.9"
+              strokeWidth="15"
+              opacity="0.95"
               filter="url(#neonGlow)"
-              strokeDasharray="20 10"
+              strokeDasharray="25 10"
               style={{
                 animation: 'spinRing 30s linear infinite reverse',
               }}
             />
-
-            {/* Secondary ring */}
+            <circle
+              cx="0"
+              cy="0"
+              r="308"
+              fill="none"
+              stroke="#ffee32"
+              strokeWidth="2"
+              opacity="0.7"
+              filter="url(#neonGlow)"
+              strokeDasharray="5 5"
+              style={{
+                animation: 'spinRing 20s linear infinite',
+              }}
+            />
             <circle
               cx="0"
               cy="0"
               r="302"
               fill="none"
               stroke="#00f0ff"
-              strokeWidth="6"
-              opacity="0.5"
+              strokeWidth="8"
+              opacity="0.6"
               filter="url(#neonGlow)"
             />
+
+            {/* Decorative dots around edge */}
+            {Array.from({ length: 24 }, (_, i) => {
+              const dotAngle = (i * 360) / 24
+              const dotRad = (dotAngle * Math.PI) / 180
+              const dotX = Math.cos(dotRad) * 318
+              const dotY = Math.sin(dotRad) * 318
+              return (
+                <circle
+                  key={`dot-${i}`}
+                  cx={dotX}
+                  cy={dotY}
+                  r="4"
+                  fill="#ffee32"
+                  opacity="0.8"
+                  filter="url(#neonGlow)"
+                />
+              )
+            })}
 
             {/* Main wheel background */}
             <circle
@@ -217,18 +295,26 @@ export function Wheel({ segments, isSpinning, targetAngle, spinDuration = 6000 }
 
                 return (
                   <g key={segment.id}>
-                    {/* Segment path */}
+                    {/* Segment base */}
                     <path
                       d={`M 0 0 L ${x1} ${y1} A 290 290 0 ${largeArc} 1 ${x2} ${y2} Z`}
                       fill={segment.color}
                       stroke="#0a0118"
                       strokeWidth="5"
-                      opacity={segment.is_prize ? 1 : 0.9}
+                      opacity={segment.is_prize ? 1 : 0.95}
                       style={{
                         filter: segment.is_prize
-                          ? 'drop-shadow(0 0 12px rgba(255,238,50,0.4))'
-                          : 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                          ? 'drop-shadow(0 0 15px rgba(255,238,50,0.5)) drop-shadow(0 0 30px rgba(255,238,50,0.3))'
+                          : 'drop-shadow(0 3px 6px rgba(0,0,0,0.4))',
                       }}
+                    />
+
+                    {/* Glossy overlay for depth */}
+                    <path
+                      d={`M 0 0 L ${x1} ${y1} A 290 290 0 ${largeArc} 1 ${x2} ${y2} Z`}
+                      fill={`url(#segmentShine-${index})`}
+                      pointerEvents="none"
+                      opacity="0.6"
                     />
 
                     {/* Prize star background */}
