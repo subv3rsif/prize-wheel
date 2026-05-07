@@ -40,25 +40,52 @@ export function Wheel({ segments, isSpinning, targetAngle, spinDuration = 6000 }
 
   return (
     <div className="relative flex items-center justify-center p-8">
-      {/* Fixed pointer at top */}
-      <div
-        className="absolute top-4 z-20"
-        style={{
-          width: 0,
-          height: 0,
-          borderLeft: '20px solid transparent',
-          borderRight: '20px solid transparent',
-          borderTop: '40px solid #ef4444',
-          filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))',
-        }}
-      />
+      {/* Glow halos behind wheel */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div
+          className="absolute w-[650px] h-[650px] rounded-full opacity-30 blur-3xl"
+          style={{
+            background: 'radial-gradient(circle, rgba(255,107,53,0.6) 0%, transparent 70%)',
+          }}
+        />
+        <div
+          className="absolute w-[700px] h-[700px] rounded-full opacity-20 blur-3xl"
+          style={{
+            background: 'radial-gradient(circle, rgba(0,240,255,0.4) 0%, transparent 70%)',
+            animation: 'pulse 3s ease-in-out infinite',
+          }}
+        />
+      </div>
+
+      {/* Fixed pointer at top - enhanced with neon */}
+      <div className="absolute top-4 z-20 flex flex-col items-center">
+        <div
+          style={{
+            width: 0,
+            height: 0,
+            borderLeft: '24px solid transparent',
+            borderRight: '24px solid transparent',
+            borderTop: '48px solid #ff006e',
+            filter: 'drop-shadow(0 0 10px #ff006e) drop-shadow(0 0 20px #ff006e) drop-shadow(0 4px 6px rgba(0,0,0,0.5))',
+          }}
+        />
+        <div
+          className="mt-2 px-4 py-1 rounded-full text-white font-bold text-sm tracking-wider"
+          style={{
+            background: '#ff006e',
+            boxShadow: '0 0 20px #ff006e, inset 0 0 10px rgba(255,255,255,0.3)',
+          }}
+        >
+          WINNER
+        </div>
+      </div>
 
       {/* Wheel SVG */}
       <svg
         width="600"
         height="600"
         viewBox="0 0 600 600"
-        className="max-w-full h-auto transform-gpu"
+        className="max-w-full h-auto transform-gpu wheel-glow"
         style={{
           transform: `rotate(${currentRotation}deg)`,
           transition: isSpinning
@@ -66,15 +93,59 @@ export function Wheel({ segments, isSpinning, targetAngle, spinDuration = 6000 }
             : 'none',
         }}
       >
+        <defs>
+          {/* Gradients for neon effect */}
+          <linearGradient id="neonGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#ff006e" />
+            <stop offset="50%" stopColor="#ff6b35" />
+            <stop offset="100%" stopColor="#00f0ff" />
+          </linearGradient>
+          <linearGradient id="neonGradient2" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#00f0ff" />
+            <stop offset="50%" stopColor="#b537f2" />
+            <stop offset="100%" stopColor="#ff006e" />
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          <filter id="innerShadow">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+            <feOffset dx="0" dy="2" result="offsetblur"/>
+            <feComponentTransfer>
+              <feFuncA type="linear" slope="0.5"/>
+            </feComponentTransfer>
+            <feMerge>
+              <feMergeNode/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+
+        {/* Outer decorative ring */}
+        <circle
+          cx="300"
+          cy="300"
+          r="295"
+          fill="none"
+          stroke="url(#neonGradient1)"
+          strokeWidth="8"
+          opacity="0.8"
+          filter="url(#glow)"
+        />
+
         {/* Background circle */}
         <circle
           cx="300"
           cy="300"
-          r="290"
-          fill="var(--wheel-bg)"
-          stroke="#f59e0b"
-          strokeWidth="10"
-          filter="drop-shadow(0 10px 30px rgba(0,0,0,0.3))"
+          r="285"
+          fill="#1a0f2e"
+          stroke="#00f0ff"
+          strokeWidth="4"
+          filter="url(#innerShadow)"
         />
 
         {/* Segments */}
@@ -85,40 +156,64 @@ export function Wheel({ segments, isSpinning, targetAngle, spinDuration = 6000 }
 
           return (
             <g key={segment.id}>
-              {/* Arc segment */}
+              {/* Arc segment with enhanced styling */}
               <path
-                d={describeArc(300, 300, 280, startAngle, endAngle)}
+                d={describeArc(300, 300, 278, startAngle, endAngle)}
                 fill={segment.color}
-                stroke="white"
-                strokeWidth="3"
-                opacity={segment.is_prize ? 1 : 0.9}
+                stroke="#0a0118"
+                strokeWidth="4"
+                opacity={segment.is_prize ? 1 : 0.85}
+                style={{
+                  filter: segment.is_prize
+                    ? 'drop-shadow(0 0 8px rgba(255,255,255,0.3))'
+                    : 'none',
+                }}
               />
 
-              {/* Prize icon */}
+              {/* Prize icon with glow */}
               {segment.is_prize && (
-                <text
-                  x="300"
-                  y="300"
-                  fill="white"
-                  fontSize="32"
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  transform={`rotate(${midAngle} 300 300) translate(0 -220)`}
-                >
-                  🎁
-                </text>
+                <g>
+                  <text
+                    x="300"
+                    y="300"
+                    fill="#ffee32"
+                    fontSize="38"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    transform={`rotate(${midAngle} 300 300) translate(0 -215)`}
+                    filter="url(#glow)"
+                  >
+                    ★
+                  </text>
+                  <text
+                    x="300"
+                    y="300"
+                    fill="white"
+                    fontSize="28"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    transform={`rotate(${midAngle} 300 300) translate(0 -215)`}
+                  >
+                    🎁
+                  </text>
+                </g>
               )}
 
-              {/* Segment label */}
+              {/* Segment label with better contrast */}
               <text
                 x="300"
                 y="300"
-                fill="var(--segment-text-color)"
-                fontSize="18"
-                fontWeight="bold"
+                fill="white"
+                fontSize="16"
+                fontWeight="700"
                 textAnchor="middle"
                 dominantBaseline="middle"
-                transform={`rotate(${midAngle} 300 300) translate(0 ${segment.is_prize ? -180 : -200})`}
+                fontFamily="Work Sans, sans-serif"
+                transform={`rotate(${midAngle} 300 300) translate(0 ${segment.is_prize ? -175 : -195})`}
+                style={{
+                  textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.5)',
+                  letterSpacing: '0.5px',
+                }}
               >
                 {segment.label}
               </text>
@@ -126,31 +221,52 @@ export function Wheel({ segments, isSpinning, targetAngle, spinDuration = 6000 }
           )
         })}
 
-        {/* Center pin */}
-        <circle cx="300" cy="300" r="35" fill="#1f2937" />
-        <circle cx="300" cy="300" r="25" fill="#f59e0b" />
-        <circle cx="300" cy="300" r="15" fill="white" />
+        {/* Center pin with neon styling */}
+        <circle cx="300" cy="300" r="42" fill="#0a0118" filter="url(#glow)" />
+        <circle
+          cx="300"
+          cy="300"
+          r="35"
+          fill="url(#neonGradient2)"
+          opacity="0.9"
+        />
+        <circle
+          cx="300"
+          cy="300"
+          r="25"
+          fill="#1a0f2e"
+          stroke="#00f0ff"
+          strokeWidth="2"
+        />
+        <circle cx="300" cy="300" r="15" fill="#ff006e" filter="url(#glow)" />
+        <circle cx="300" cy="300" r="8" fill="#ffee32" />
 
-        {/* Decorative border */}
+        {/* Animated decorative border */}
         <circle
           cx="300"
           cy="300"
           r="290"
           fill="none"
-          stroke="url(#festiveGradient)"
-          strokeWidth="6"
-          strokeDasharray="10 5"
+          stroke="url(#neonGradient1)"
+          strokeWidth="3"
+          strokeDasharray="15 10"
+          opacity="0.6"
+          style={{
+            animation: isSpinning ? 'none' : 'spin 20s linear infinite reverse',
+          }}
         />
-
-        {/* Gradient definition */}
-        <defs>
-          <linearGradient id="festiveGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f59e0b" />
-            <stop offset="50%" stopColor="#ef4444" />
-            <stop offset="100%" stopColor="#8b5cf6" />
-          </linearGradient>
-        </defs>
       </svg>
+
+      <style jsx>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 0.2; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(1.05); }
+        }
+      `}</style>
     </div>
   )
 }

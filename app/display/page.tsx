@@ -97,25 +97,63 @@ function DisplayContent() {
 
   if (segments.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-500 to-pink-500">
-        <div className="text-center text-white">
-          <div className="text-8xl mb-6">🎡</div>
-          <h1 className="text-5xl font-bold mb-4">En attente...</h1>
-          <p className="text-2xl opacity-90">Chargement de la roue</p>
+      <div className="flex items-center justify-center min-h-screen carnival-bg">
+        <div className="text-center">
+          <div className="text-9xl mb-8 animate-bounce-elastic">🎡</div>
+          <h1 className="heading-circus text-7xl neon-text-cyan mb-6">
+            En attente...
+          </h1>
+          <p className="text-3xl text-white/80 font-semibold animate-pulse">
+            Chargement de la roue
+          </p>
+          <div className="mt-8 flex justify-center gap-2">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="w-3 h-3 rounded-full bg-cyan-400"
+                style={{
+                  animation: 'pulse 1.5s ease-in-out infinite',
+                  animationDelay: `${i * 0.2}s`,
+                  boxShadow: '0 0 20px var(--neon-cyan)',
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="relative min-h-screen w-screen bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center overflow-hidden">
-      <Wheel
-        segments={segments}
-        isSpinning={isSpinning}
-        targetAngle={targetAngle}
-        spinDuration={spinDuration}
-      />
+    <div className="relative min-h-screen w-screen carnival-bg flex flex-col items-center justify-center overflow-hidden">
+      {/* Decorative top banner */}
+      <div className="absolute top-0 left-0 right-0 h-24 flex items-center justify-center z-10">
+        <div className="relative">
+          <h1 className="heading-circus text-5xl neon-text-orange tracking-widest px-8">
+            PRIZE WHEEL
+          </h1>
+          <div className="absolute -top-2 -right-2 w-20 h-20 rounded-full bg-yellow-400 opacity-20 blur-2xl animate-pulse" />
+          <div className="absolute -bottom-2 -left-2 w-20 h-20 rounded-full bg-cyan-400 opacity-20 blur-2xl animate-pulse" style={{ animationDelay: '0.5s' }} />
+        </div>
+      </div>
 
+      {/* Main wheel */}
+      <div className="relative z-10">
+        <Wheel
+          segments={segments}
+          isSpinning={isSpinning}
+          targetAngle={targetAngle}
+          spinDuration={spinDuration}
+        />
+      </div>
+
+      {/* Decorative corner accents */}
+      <div className="absolute top-8 left-8 w-32 h-32 border-l-4 border-t-4 border-cyan-400/30 rounded-tl-3xl" />
+      <div className="absolute top-8 right-8 w-32 h-32 border-r-4 border-t-4 border-magenta-400/30 rounded-tr-3xl" />
+      <div className="absolute bottom-8 left-8 w-32 h-32 border-l-4 border-b-4 border-orange-400/30 rounded-bl-3xl" />
+      <div className="absolute bottom-8 right-8 w-32 h-32 border-r-4 border-b-4 border-purple-400/30 rounded-br-3xl" />
+
+      {/* Overlays */}
       {showOverlay === 'winner' && (
         <WinnerOverlay segmentLabel={winningSegment} />
       )}
