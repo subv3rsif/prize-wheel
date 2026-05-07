@@ -1,3 +1,48 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    /* Default fallbacks (overridden by inline style in layout) */
+    --primary-color: #f59e0b;
+    --secondary-color: #ef4444;
+    --wheel-bg: #ffffff;
+    --segment-text-color: #ffffff;
+
+    /* Animation variables (set dynamically by JS) */
+    --target-angle: 0deg;
+    --spin-duration: 6s;
+    --rotation: 0deg;
+  }
+
+  body {
+    @apply antialiased;
+  }
+}
+
+@layer utilities {
+  /* Festive shadow utility */
+  .festive-shadow {
+    box-shadow:
+      0 4px 6px -1px rgba(245, 158, 11, 0.3),
+      0 10px 15px -3px rgba(239, 68, 68, 0.2),
+      0 20px 25px -5px rgba(139, 92, 246, 0.1);
+  }
+
+  /* Festive gradient border */
+  .festive-border {
+    border: 4px solid transparent;
+    background-image:
+      linear-gradient(white, white),
+      linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+  }
+
+  /* GPU-accelerated transforms */
+  .transform-gpu {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+}
