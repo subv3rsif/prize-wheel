@@ -16,7 +16,6 @@ interface Segment {
 
 export default function SegmentsPage() {
   const [segments, setSegments] = useState<Segment[]>([])
-  const [editingId, setEditingId] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 

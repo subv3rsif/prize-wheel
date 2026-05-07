@@ -43,7 +43,10 @@ export default function BrandingPage() {
 
   const handleSave = async () => {
     setIsLoading(true)
-    const result = await updateSettings(settings)
+    const result = await updateSettings({
+      ...settings,
+      logo_url: settings.logo_url || undefined
+    })
 
     if (result.success) {
       setMessage('✅ Paramètres sauvegardés avec succès !')

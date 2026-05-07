@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { updateSettings } from '@/app/actions/wheel'
+import { updateSettings, forceUnlockWheel } from '@/app/actions/wheel'
 
 interface Settings {
   spin_button_label: string
@@ -66,7 +66,7 @@ export default function SettingsPage() {
     }
 
     setIsLoading(true)
-    const result = await updateSettings({ is_spinning: false })
+    const result = await forceUnlockWheel()
 
     if (result.success) {
       setSettings({ ...settings, is_spinning: false })

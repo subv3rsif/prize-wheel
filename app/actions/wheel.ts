@@ -183,6 +183,25 @@ export async function updateSettings(data: {
 }
 
 /**
+ * Force unlock the wheel (release the spin lock)
+ */
+export async function forceUnlockWheel() {
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('settings')
+    .update({ is_spinning: false })
+    .eq('id', 1)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath('/', 'layout')
+  return { success: true }
+}
+
+/**
  * Create segment
  */
 export async function createSegment(data: {
