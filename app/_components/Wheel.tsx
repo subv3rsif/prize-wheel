@@ -209,11 +209,11 @@ export function Wheel({ segments, isSpinning, targetAngle, spinDuration = 6000 }
 
                 const largeArc = anglePerSegment > 180 ? 1 : 0
 
-                const textX = Math.cos(midRad) * 210
-                const textY = Math.sin(midRad) * 210
+                const textX = Math.cos(midRad) * 200
+                const textY = Math.sin(midRad) * 200
 
-                const iconX = Math.cos(midRad) * 240
-                const iconY = Math.sin(midRad) * 240
+                const iconX = Math.cos(midRad) * 235
+                const iconY = Math.sin(midRad) * 235
 
                 return (
                   <g key={segment.id}>
@@ -237,14 +237,11 @@ export function Wheel({ segments, isSpinning, targetAngle, spinDuration = 6000 }
                         x={iconX}
                         y={iconY}
                         fill="#ffee32"
-                        fontSize="42"
+                        fontSize="40"
                         textAnchor="middle"
                         dominantBaseline="middle"
                         filter="url(#neonGlow)"
-                        style={{
-                          transform: `rotate(${midAngle + 90}deg)`,
-                          transformOrigin: `${iconX}px ${iconY}px`,
-                        }}
+                        transform={`rotate(${-currentRotation} ${iconX} ${iconY})`}
                       >
                         ★
                       </text>
@@ -256,12 +253,11 @@ export function Wheel({ segments, isSpinning, targetAngle, spinDuration = 6000 }
                         x={iconX}
                         y={iconY}
                         fill="white"
-                        fontSize="32"
+                        fontSize="30"
                         textAnchor="middle"
                         dominantBaseline="middle"
+                        transform={`rotate(${-currentRotation} ${iconX} ${iconY})`}
                         style={{
-                          transform: `rotate(${midAngle + 90}deg)`,
-                          transformOrigin: `${iconX}px ${iconY}px`,
                           filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))',
                         }}
                       >
@@ -269,21 +265,24 @@ export function Wheel({ segments, isSpinning, targetAngle, spinDuration = 6000 }
                       </text>
                     )}
 
-                    {/* Segment label */}
+                    {/* Segment label - counter-rotated to stay horizontal */}
                     <text
                       x={textX}
                       y={textY}
                       fill="white"
-                      fontSize="18"
-                      fontWeight="800"
+                      fontSize="16"
+                      fontWeight="900"
                       textAnchor="middle"
                       dominantBaseline="middle"
                       fontFamily="'Work Sans', sans-serif"
+                      transform={`rotate(${-currentRotation} ${textX} ${textY})`}
                       style={{
-                        transform: `rotate(${midAngle + 90}deg)`,
-                        transformOrigin: `${textX}px ${textY}px`,
-                        textShadow: '0 0 8px rgba(0,0,0,0.9), 0 2px 6px rgba(0,0,0,0.8), 0 0 3px rgba(255,255,255,0.3)',
+                        textShadow: '0 0 15px rgba(0,0,0,1), 0 4px 10px rgba(0,0,0,1), 0 0 5px rgba(255,255,255,0.5), 0 0 25px rgba(0,0,0,0.9)',
                         letterSpacing: '0.5px',
+                        paintOrder: 'stroke fill',
+                        stroke: 'rgba(0,0,0,0.95)',
+                        strokeWidth: '4px',
+                        strokeLinejoin: 'round',
                       }}
                     >
                       {segment.label}
