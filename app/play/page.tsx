@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { drawPrize } from '@/app/actions/wheel'
 import { createClient } from '@/lib/supabase/client'
-import { HalfWheel } from '@/app/_components/HalfWheel'
+import { PremiumHalfWheel } from '@/app/_components/PremiumHalfWheel'
+import { PremiumResultOverlay } from '@/app/_components/PremiumResultOverlay'
 
 interface Segment {
   id: string
@@ -19,7 +20,9 @@ export default function PlayPage() {
   const [targetAngle, setTargetAngle] = useState(0)
   const [spinDuration, setSpinDuration] = useState(6000)
   const [touchStartY, setTouchStartY] = useState<number | null>(null)
-  const [buttonLabel, setButtonLabel] = useState('SPIN')
+  const [buttonLabel, setButtonLabel] = useState('LAUNCH')
+  const [showResult, setShowResult] = useState(false)
+  const [resultSegment, setResultSegment] = useState<{ label: string; isPrize: boolean } | null>(null)
   const supabase = createClient()
 
   // Fetch segments
@@ -74,15 +77,23 @@ export default function PlayPage() {
 
     channel
       .on('broadcast', { event: 'spin' }, (payload: any) => {
-        const { targetAngle: angle, spinDuration: duration } = payload.payload
+        const { targetAngle: angle, spinDuration: duration, segmentLabel, isPrize } = payload.payload
 
         setIsSpinning(true)
         setTargetAngle(angle)
         setSpinDuration(duration)
+        setShowResult(false)
 
         setTimeout(() => {
           setIsSpinning(false)
-        }, duration + 1000)
+          setResultSegment({ label: segmentLabel, isPrize })
+          setShowResult(true)
+
+          // Auto-hide result after 5 seconds
+          setTimeout(() => {
+            setShowResult(false)
+          }, 5000)
+        }, duration)
       })
       .subscribe()
 
@@ -126,95 +137,140 @@ export default function PlayPage() {
   }
 
   return (
-    <div
-      className="relative flex flex-col min-h-screen carnival-bg overflow-hidden"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
-      {/* Title banner */}
-      <div className="relative h-16 flex items-center justify-center z-10 border-b border-white/10">
-        <h1 className="heading-circus text-3xl md:text-4xl neon-text-orange">
-          PRIZE WHEEL
-        </h1>
-        <p className="absolute right-6 text-sm text-white/60 font-semibold">
-          {isSpinning ? '⚡ En rotation...' : 'Mode Tactile'}
-        </p>
-      </div>
-
-      {/* Half Wheel Display */}
-      <div className="relative flex-shrink-0 pt-4">
-        <HalfWheel
-          segments={segments}
-          isSpinning={isSpinning}
-          targetAngle={targetAngle}
-          spinDuration={spinDuration}
-        />
-      </div>
-
-      {/* Control area with SPIN button */}
-      <div className="relative flex-1 flex flex-col items-center justify-center px-8 pb-12">
-        {/* SPIN button */}
-        <button
-          onClick={handleSpin}
-          disabled={isSpinning}
-          className="relative disabled:cursor-not-allowed group touch-manipulation mb-8"
-          style={{ WebkitTapHighlightColor: 'transparent' }}
-        >
-          {/* Outer glow ring */}
-          {!isSpinning && (
-            <div className="absolute -inset-8 rounded-full blur-3xl opacity-60 pointer-events-none">
-              <div className="w-full h-full bg-gradient-to-br from-orange-500 via-pink-500 to-purple-500 rounded-full animate-pulse" />
-            </div>
-          )}
-
-          {/* Button surface */}
-          <div className={`relative w-48 h-48 md:w-56 md:h-56 rounded-full border-8 flex items-center justify-center transition-all duration-200 ${
-            isSpinning
-              ? 'border-cyan-400 bg-gradient-to-br from-[#1a0f2e] to-[#0a0118]'
-              : 'border-yellow-300 bg-gradient-to-br from-orange-500 via-pink-600 to-purple-600 active:scale-95'
-          }`}
+    <>
+      <div
+        className="relative flex flex-col min-h-screen overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        style={{
+          background: 'radial-gradient(ellipse at top, #1a0a2e 0%, #0d0416 50%, #000 100%)',
+        }}
+      >
+        {/* Logo placeholder at top */}
+        <div className="relative h-24 flex items-center justify-center z-10 border-b-2 border-yellow-600/30">
+          <div
+            className="flex items-center justify-center w-48 h-16 rounded-2xl border-4 border-dashed border-yellow-600/50"
             style={{
-              boxShadow: isSpinning
-                ? '0 0 50px rgba(0,240,255,0.9), 0 0 100px rgba(0,240,255,0.6), inset 0 0 30px rgba(0,240,255,0.3)'
-                : '0 0 50px rgba(255,238,50,0.8), 0 0 90px rgba(255,107,53,0.6), inset 0 0 30px rgba(255,255,255,0.3), 0 10px 40px rgba(0,0,0,0.5)',
+              background: 'rgba(255,215,0,0.1)',
             }}
           >
-            {isSpinning ? (
-              <div className="flex flex-col items-center gap-3">
-                <div className="text-6xl md:text-7xl animate-spin" style={{ animationDuration: '1.5s' }}>
-                  ⚡
-                </div>
-                <div className="heading-circus text-2xl text-cyan-300"
-                  style={{ textShadow: '0 0 20px rgba(0,240,255,0.8)' }}
-                >
-                  EN COURS
-                </div>
-              </div>
-            ) : (
-              <div className="heading-circus text-5xl md:text-6xl text-white tracking-wider select-none"
-                style={{
-                  textShadow: '0 0 30px rgba(255,238,50,0.9), 0 5px 10px rgba(0,0,0,0.8), 0 0 60px rgba(255,107,53,0.7)',
-                }}
-              >
-                {buttonLabel}
+            <span className="text-yellow-600/70 font-bold text-sm tracking-wider">
+              VOTRE LOGO
+            </span>
+          </div>
+        </div>
+
+        {/* Premium Half Wheel */}
+        <div className="relative flex-shrink-0 pt-6">
+          <PremiumHalfWheel
+            segments={segments}
+            isSpinning={isSpinning}
+            targetAngle={targetAngle}
+            spinDuration={spinDuration}
+          />
+        </div>
+
+        {/* Premium LAUNCH button */}
+        <div className="relative flex-1 flex flex-col items-center justify-center px-8 pb-16">
+          <button
+            onClick={handleSpin}
+            disabled={isSpinning}
+            className="relative disabled:cursor-not-allowed group touch-manipulation"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
+            {/* Massive glow ring */}
+            {!isSpinning && (
+              <div className="absolute -inset-12 rounded-full blur-3xl opacity-70 pointer-events-none">
+                <div
+                  className="w-full h-full rounded-full animate-pulse"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(255,215,0,0.8) 0%, rgba(255,140,0,0.4) 50%, transparent 70%)',
+                  }}
+                />
               </div>
             )}
-          </div>
-        </button>
 
-        {/* Instructions */}
-        <div className="bg-black/30 backdrop-blur-sm border-2 border-yellow-400/30 rounded-2xl px-8 py-4 max-w-lg">
-          <p className="text-lg md:text-xl text-white/90 font-bold tracking-wide text-center">
-            ✨ Touchez le bouton • Glissez vers le haut ↑
-          </p>
+            {/* Premium button */}
+            <div
+              className={`relative w-64 h-64 md:w-72 md:h-72 rounded-full border-8 flex items-center justify-center transition-all duration-300 ${
+                isSpinning ? 'scale-95' : 'active:scale-90'
+              }`}
+              style={{
+                background: isSpinning
+                  ? 'linear-gradient(135deg, #1a0a2e 0%, #0d0416 100%)'
+                  : 'linear-gradient(135deg, #ffd700 0%, #ff8c00 50%, #ff6347 100%)',
+                borderColor: isSpinning ? '#00ffff' : '#fff',
+                boxShadow: isSpinning
+                  ? '0 0 60px rgba(0,255,255,1), 0 0 120px rgba(0,255,255,0.6), inset 0 0 40px rgba(0,255,255,0.3)'
+                  : '0 0 60px rgba(255,215,0,1), 0 0 120px rgba(255,140,0,0.8), inset 0 0 40px rgba(255,255,255,0.4), 0 15px 50px rgba(0,0,0,0.7)',
+              }}
+            >
+              {isSpinning ? (
+                <div className="flex flex-col items-center gap-4">
+                  <div
+                    className="text-8xl animate-spin"
+                    style={{
+                      animationDuration: '1.2s',
+                      filter: 'drop-shadow(0 0 20px rgba(0,255,255,1))',
+                    }}
+                  >
+                    ⚡
+                  </div>
+                  <div
+                    className="text-2xl font-black tracking-wider"
+                    style={{
+                      fontFamily: "'Righteous', cursive",
+                      color: '#00ffff',
+                      textShadow: '0 0 20px rgba(0,255,255,1), 0 3px 6px rgba(0,0,0,0.9)',
+                    }}
+                  >
+                    SPINNING...
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="text-6xl md:text-7xl font-black tracking-wider select-none"
+                  style={{
+                    fontFamily: "'Righteous', cursive",
+                    color: '#1a0a2e',
+                    textShadow: '0 0 30px rgba(255,255,255,0.8), 0 5px 15px rgba(0,0,0,0.5), 0 0 60px rgba(255,215,0,0.8)',
+                  }}
+                >
+                  {buttonLabel}
+                </div>
+              )}
+            </div>
+          </button>
+
+          {/* Instructions */}
+          <div
+            className="mt-12 px-10 py-4 rounded-2xl border-3"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(255,140,0,0.1) 100%)',
+              borderColor: 'rgba(255,215,0,0.4)',
+              boxShadow: '0 0 30px rgba(255,215,0,0.3)',
+            }}
+          >
+            <p
+              className="text-xl md:text-2xl font-bold tracking-wide text-center"
+              style={{
+                color: '#ffd700',
+                textShadow: '0 0 20px rgba(255,215,0,0.8), 0 2px 4px rgba(0,0,0,0.8)',
+              }}
+            >
+              ✨ Touchez le bouton • Glissez vers le haut ↑
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Decorative corner elements */}
-      <div className="absolute top-20 left-8 w-20 h-20 border-l-4 border-t-4 border-cyan-400/30 rounded-tl-3xl pointer-events-none" />
-      <div className="absolute top-20 right-8 w-20 h-20 border-r-4 border-t-4 border-magenta-400/30 rounded-tr-3xl pointer-events-none" />
-      <div className="absolute bottom-8 left-8 w-20 h-20 border-l-4 border-b-4 border-orange-400/30 rounded-bl-3xl pointer-events-none" />
-      <div className="absolute bottom-8 right-8 w-20 h-20 border-r-4 border-b-4 border-purple-400/30 rounded-br-3xl pointer-events-none" />
-    </div>
+      {/* Premium Result Overlay */}
+      {showResult && resultSegment && (
+        <PremiumResultOverlay
+          segmentLabel={resultSegment.label}
+          isPrize={resultSegment.isPrize}
+        />
+      )}
+    </>
   )
 }
