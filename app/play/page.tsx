@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { drawPrize } from '@/app/actions/wheel'
+import { drawPrize, forceUnlockWheel } from '@/app/actions/wheel'
 import { createClient } from '@/lib/supabase/client'
 import { PremiumHalfWheel } from '@/app/_components/PremiumHalfWheel'
 import { PremiumResultOverlay } from '@/app/_components/PremiumResultOverlay'
@@ -84,10 +84,13 @@ export default function PlayPage() {
         setSpinDuration(duration)
         setShowResult(false)
 
-        setTimeout(() => {
+        setTimeout(async () => {
           setIsSpinning(false)
           setResultSegment({ label: segmentLabel, isPrize })
           setShowResult(true)
+
+          // Release the spin lock on server
+          await forceUnlockWheel()
 
           // Auto-hide result after 5 seconds
           setTimeout(() => {

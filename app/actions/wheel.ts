@@ -125,16 +125,7 @@ export async function drawPrize() {
       },
     })
 
-    // 9. RELEASE LOCK AFTER ANIMATION (async)
-    setTimeout(async () => {
-      await supabase
-        .from('settings')
-        .update({ is_spinning: false })
-        .eq('id', 1)
-
-      revalidatePath('/play')
-      revalidatePath('/display')
-    }, spinDuration + 1000)
+    // Note: Lock will be released by client after animation completes
 
     return {
       success: true,
