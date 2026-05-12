@@ -254,9 +254,9 @@ export function PremiumHalfWheel({ segments, isSpinning, targetAngle, spinDurati
               <g
                 style={{
                   transform: `rotate(${currentRotation}deg)`,
-                  transformOrigin: 'center',
+                  transformOrigin: '400px 400px',
                   transition: isSpinning
-                    ? `transform ${spinDuration}ms cubic-bezier(0.19, 0.72, 0.23, 0.98)`
+                    ? `transform ${spinDuration}ms cubic-bezier(0.17, 0.67, 0.12, 0.99)`
                     : 'transform 0.3s ease-out',
                 }}
               >

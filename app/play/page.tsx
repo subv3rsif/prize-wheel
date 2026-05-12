@@ -23,6 +23,7 @@ export default function PlayPage() {
   const [buttonLabel, setButtonLabel] = useState('LAUNCH')
   const [showResult, setShowResult] = useState(false)
   const [resultSegment, setResultSegment] = useState<{ label: string; isPrize: boolean } | null>(null)
+  const [showWinnerFlash, setShowWinnerFlash] = useState(false)
   const supabase = createClient()
 
   // Fetch segments
@@ -86,16 +87,24 @@ export default function PlayPage() {
 
         setTimeout(async () => {
           setIsSpinning(false)
-          setResultSegment({ label: segmentLabel, isPrize })
-          setShowResult(true)
+
+          // Dramatic flash effect when wheel stops
+          setShowWinnerFlash(true)
+          setTimeout(() => setShowWinnerFlash(false), 800)
+
+          // Show result after dramatic pause
+          setTimeout(() => {
+            setResultSegment({ label: segmentLabel, isPrize })
+            setShowResult(true)
+
+            // Auto-hide result after 5 seconds
+            setTimeout(() => {
+              setShowResult(false)
+            }, 5000)
+          }, 600)
 
           // Release the spin lock on server
           await forceUnlockWheel()
-
-          // Auto-hide result after 5 seconds
-          setTimeout(() => {
-            setShowResult(false)
-          }, 5000)
         }, duration)
       })
       .subscribe()
@@ -171,7 +180,89 @@ export default function PlayPage() {
             targetAngle={targetAngle}
             spinDuration={spinDuration}
           />
+
+          {/* Winner flash burst effect */}
+          {showWinnerFlash && (
+            <div
+              className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center"
+              style={{
+                animation: 'flashBurst 0.8s ease-out forwards',
+              }}
+            >
+              {/* Multiple expanding rings */}
+              <div
+                className="absolute w-32 h-32 rounded-full"
+                style={{
+                  background: 'radial-gradient(circle, rgba(255,215,0,0.8) 0%, rgba(255,215,0,0) 70%)',
+                  animation: 'expandRing 0.8s ease-out forwards',
+                }}
+              />
+              <div
+                className="absolute w-32 h-32 rounded-full"
+                style={{
+                  background: 'radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,215,0,0) 70%)',
+                  animation: 'expandRing 0.8s ease-out forwards',
+                  animationDelay: '0.1s',
+                }}
+              />
+              <div
+                className="absolute w-32 h-32 rounded-full"
+                style={{
+                  background: 'radial-gradient(circle, rgba(255,140,0,0.8) 0%, rgba(255,140,0,0) 70%)',
+                  animation: 'expandRing 0.8s ease-out forwards',
+                  animationDelay: '0.2s',
+                }}
+              />
+
+              {/* Sparkles burst */}
+              {Array.from({ length: 12 }, (_, i) => {
+                const angle = (i * 360) / 12
+                return (
+                  <div
+                    key={i}
+                    className="absolute w-2 h-2 rounded-full bg-yellow-300"
+                    style={{
+                      animation: `sparkleShoot 0.6s ease-out forwards`,
+                      animationDelay: `${i * 0.03}s`,
+                      transform: `rotate(${angle}deg)`,
+                      boxShadow: '0 0 10px rgba(255,215,0,1)',
+                    }}
+                  />
+                )
+              })}
+            </div>
+          )}
         </div>
+
+        <style jsx>{`
+          @keyframes flashBurst {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            100% { opacity: 0; }
+          }
+
+          @keyframes expandRing {
+            0% {
+              transform: scale(0);
+              opacity: 1;
+            }
+            100% {
+              transform: scale(15);
+              opacity: 0;
+            }
+          }
+
+          @keyframes sparkleShoot {
+            0% {
+              transform: scale(0) translateY(0);
+              opacity: 1;
+            }
+            100% {
+              transform: scale(1) translateY(-200px);
+              opacity: 0;
+            }
+          }
+        `}</style>
 
         {/* Premium LAUNCH button */}
         <div className="relative flex-1 flex flex-col items-center justify-center px-8 pb-16">
@@ -181,65 +272,139 @@ export default function PlayPage() {
             className="relative disabled:cursor-not-allowed group touch-manipulation"
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
-            {/* Massive glow ring */}
+            {/* Rotating glow rings - multiple layers */}
             {!isSpinning && (
-              <div className="absolute -inset-12 rounded-full blur-3xl opacity-70 pointer-events-none">
-                <div
-                  className="w-full h-full rounded-full animate-pulse"
-                  style={{
-                    background: 'radial-gradient(circle, rgba(255,215,0,0.8) 0%, rgba(255,140,0,0.4) 50%, transparent 70%)',
-                  }}
-                />
-              </div>
+              <>
+                <div className="absolute -inset-16 rounded-full blur-3xl opacity-60 pointer-events-none animate-spin" style={{ animationDuration: '8s' }}>
+                  <div
+                    className="w-full h-full rounded-full"
+                    style={{
+                      background: 'conic-gradient(from 0deg, #ffd700, #ff8c00, #ff6347, #ff1493, #ffd700)',
+                    }}
+                  />
+                </div>
+                <div className="absolute -inset-12 rounded-full blur-2xl opacity-80 pointer-events-none">
+                  <div
+                    className="w-full h-full rounded-full animate-pulse"
+                    style={{
+                      background: 'radial-gradient(circle, rgba(255,215,0,0.9) 0%, rgba(255,140,0,0.6) 50%, transparent 70%)',
+                      animationDuration: '2s',
+                    }}
+                  />
+                </div>
+              </>
             )}
 
-            {/* Premium button */}
+            {/* Spinning state - rotating energy rings */}
+            {isSpinning && (
+              <>
+                <div className="absolute -inset-20 rounded-full blur-3xl opacity-70 pointer-events-none">
+                  <div
+                    className="w-full h-full rounded-full animate-spin"
+                    style={{
+                      background: 'conic-gradient(from 0deg, #00ffff, #00f0ff, transparent, #00ffff)',
+                      animationDuration: '1s',
+                    }}
+                  />
+                </div>
+                <div className="absolute -inset-16 rounded-full blur-2xl opacity-60 pointer-events-none">
+                  <div
+                    className="w-full h-full rounded-full animate-spin"
+                    style={{
+                      background: 'conic-gradient(from 180deg, transparent, #00ffff, transparent)',
+                      animationDuration: '1.5s',
+                    }}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Premium button - enhanced 3D effect */}
             <div
-              className={`relative w-64 h-64 md:w-72 md:h-72 rounded-full border-8 flex items-center justify-center transition-all duration-300 ${
+              className={`relative w-64 h-64 md:w-72 md:h-72 rounded-full flex items-center justify-center transition-all duration-300 ${
                 isSpinning ? 'scale-95' : 'active:scale-90'
               }`}
               style={{
                 background: isSpinning
                   ? 'linear-gradient(135deg, #1a0a2e 0%, #0d0416 100%)'
-                  : 'linear-gradient(135deg, #ffd700 0%, #ff8c00 50%, #ff6347 100%)',
-                borderColor: isSpinning ? '#00ffff' : '#fff',
+                  : 'linear-gradient(135deg, #ffd700 0%, #ff8c00 30%, #ff6347 70%, #ff1493 100%)',
+                border: isSpinning ? '8px solid #00ffff' : '8px solid #fff',
                 boxShadow: isSpinning
-                  ? '0 0 60px rgba(0,255,255,1), 0 0 120px rgba(0,255,255,0.6), inset 0 0 40px rgba(0,255,255,0.3)'
-                  : '0 0 60px rgba(255,215,0,1), 0 0 120px rgba(255,140,0,0.8), inset 0 0 40px rgba(255,255,255,0.4), 0 15px 50px rgba(0,0,0,0.7)',
+                  ? '0 0 60px rgba(0,255,255,1), 0 0 120px rgba(0,255,255,0.8), inset 0 0 60px rgba(0,255,255,0.4), 0 20px 60px rgba(0,0,0,0.9)'
+                  : '0 0 80px rgba(255,215,0,1), 0 0 150px rgba(255,140,0,0.9), inset 0 0 60px rgba(255,255,255,0.6), 0 25px 70px rgba(0,0,0,0.8)',
               }}
             >
+              {/* Inner ring decoration */}
+              <div
+                className="absolute inset-6 rounded-full pointer-events-none"
+                style={{
+                  border: isSpinning ? '3px solid rgba(0,255,255,0.3)' : '3px solid rgba(255,255,255,0.4)',
+                  boxShadow: isSpinning
+                    ? 'inset 0 0 30px rgba(0,255,255,0.3)'
+                    : 'inset 0 0 30px rgba(255,215,0,0.3)',
+                }}
+              />
               {isSpinning ? (
                 <div className="flex flex-col items-center gap-4">
-                  <div
-                    className="text-8xl animate-spin"
-                    style={{
-                      animationDuration: '1.2s',
-                      filter: 'drop-shadow(0 0 20px rgba(0,255,255,1))',
-                    }}
-                  >
-                    ⚡
+                  <div className="relative">
+                    {/* Multiple rotating lightning bolts */}
+                    <div
+                      className="text-8xl animate-spin absolute inset-0 flex items-center justify-center"
+                      style={{
+                        animationDuration: '1s',
+                        filter: 'drop-shadow(0 0 30px rgba(0,255,255,1))',
+                        opacity: 0.6,
+                      }}
+                    >
+                      ⚡
+                    </div>
+                    <div
+                      className="text-8xl animate-spin relative"
+                      style={{
+                        animationDuration: '1.2s',
+                        filter: 'drop-shadow(0 0 40px rgba(0,255,255,1)) drop-shadow(0 0 60px rgba(0,255,255,0.8))',
+                      }}
+                    >
+                      ⚡
+                    </div>
                   </div>
                   <div
-                    className="text-2xl font-black tracking-wider"
+                    className="text-2xl font-black tracking-wider animate-pulse"
                     style={{
                       fontFamily: "'Righteous', cursive",
                       color: '#00ffff',
-                      textShadow: '0 0 20px rgba(0,255,255,1), 0 3px 6px rgba(0,0,0,0.9)',
+                      textShadow: '0 0 30px rgba(0,255,255,1), 0 0 50px rgba(0,255,255,0.8), 0 4px 8px rgba(0,0,0,0.9)',
+                      animationDuration: '1.5s',
                     }}
                   >
                     SPINNING...
                   </div>
                 </div>
               ) : (
-                <div
-                  className="text-6xl md:text-7xl font-black tracking-wider select-none"
-                  style={{
-                    fontFamily: "'Righteous', cursive",
-                    color: '#1a0a2e',
-                    textShadow: '0 0 30px rgba(255,255,255,0.8), 0 5px 15px rgba(0,0,0,0.5), 0 0 60px rgba(255,215,0,0.8)',
-                  }}
-                >
-                  {buttonLabel}
+                <div className="relative">
+                  {/* Text shadow layers for 3D depth */}
+                  <div
+                    className="absolute inset-0 flex items-center justify-center blur-sm opacity-70"
+                    style={{
+                      fontFamily: "'Righteous', cursive",
+                      fontSize: 'inherit',
+                      color: '#ff8c00',
+                    }}
+                  >
+                    {buttonLabel}
+                  </div>
+                  <div
+                    className="relative text-6xl md:text-7xl font-black tracking-wider select-none"
+                    style={{
+                      fontFamily: "'Righteous', cursive",
+                      background: 'linear-gradient(180deg, #fff 0%, #ffd700 50%, #ff8c00 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      filter: 'drop-shadow(0 0 40px rgba(255,255,255,0.9)) drop-shadow(0 0 60px rgba(255,215,0,0.8)) drop-shadow(0 6px 20px rgba(0,0,0,0.8))',
+                    }}
+                  >
+                    {buttonLabel}
+                  </div>
                 </div>
               )}
             </div>

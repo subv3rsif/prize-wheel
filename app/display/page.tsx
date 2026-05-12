@@ -21,6 +21,7 @@ function DisplayContent() {
   const [spinDuration, setSpinDuration] = useState(6000)
   const [showResult, setShowResult] = useState(false)
   const [resultSegment, setResultSegment] = useState<{ label: string; isPrize: boolean } | null>(null)
+  const [showWinnerFlash, setShowWinnerFlash] = useState(false)
 
   const { playTick, playWin, playLoss, stopTick } = useSoundManager()
   const supabase = createClient()
@@ -74,19 +75,27 @@ function DisplayContent() {
         setTimeout(() => {
           setIsSpinning(false)
           stopTick()
-          setResultSegment({ label: segmentLabel, isPrize })
-          setShowResult(true)
 
-          if (isPrize) {
-            playWin()
-          } else {
-            playLoss()
-          }
+          // Dramatic flash effect when wheel stops
+          setShowWinnerFlash(true)
+          setTimeout(() => setShowWinnerFlash(false), 800)
 
-          // Auto-hide result after 5 seconds
+          // Show result after dramatic pause
           setTimeout(() => {
-            setShowResult(false)
-          }, 5000)
+            setResultSegment({ label: segmentLabel, isPrize })
+            setShowResult(true)
+
+            if (isPrize) {
+              playWin()
+            } else {
+              playLoss()
+            }
+
+            // Auto-hide result after 5 seconds
+            setTimeout(() => {
+              setShowResult(false)
+            }, 5000)
+          }, 600)
         }, duration)
       })
       .subscribe()
@@ -155,7 +164,89 @@ function DisplayContent() {
             targetAngle={targetAngle}
             spinDuration={spinDuration}
           />
+
+          {/* Winner flash burst effect */}
+          {showWinnerFlash && (
+            <div
+              className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center"
+              style={{
+                animation: 'flashBurst 0.8s ease-out forwards',
+              }}
+            >
+              {/* Multiple expanding rings */}
+              <div
+                className="absolute w-32 h-32 rounded-full"
+                style={{
+                  background: 'radial-gradient(circle, rgba(255,215,0,0.8) 0%, rgba(255,215,0,0) 70%)',
+                  animation: 'expandRing 0.8s ease-out forwards',
+                }}
+              />
+              <div
+                className="absolute w-32 h-32 rounded-full"
+                style={{
+                  background: 'radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,215,0,0) 70%)',
+                  animation: 'expandRing 0.8s ease-out forwards',
+                  animationDelay: '0.1s',
+                }}
+              />
+              <div
+                className="absolute w-32 h-32 rounded-full"
+                style={{
+                  background: 'radial-gradient(circle, rgba(255,140,0,0.8) 0%, rgba(255,140,0,0) 70%)',
+                  animation: 'expandRing 0.8s ease-out forwards',
+                  animationDelay: '0.2s',
+                }}
+              />
+
+              {/* Sparkles burst */}
+              {Array.from({ length: 12 }, (_, i) => {
+                const angle = (i * 360) / 12
+                return (
+                  <div
+                    key={i}
+                    className="absolute w-2 h-2 rounded-full bg-yellow-300"
+                    style={{
+                      animation: `sparkleShoot 0.6s ease-out forwards`,
+                      animationDelay: `${i * 0.03}s`,
+                      transform: `rotate(${angle}deg)`,
+                      boxShadow: '0 0 10px rgba(255,215,0,1)',
+                    }}
+                  />
+                )
+              })}
+            </div>
+          )}
         </div>
+
+        <style jsx>{`
+          @keyframes flashBurst {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            100% { opacity: 0; }
+          }
+
+          @keyframes expandRing {
+            0% {
+              transform: scale(0);
+              opacity: 1;
+            }
+            100% {
+              transform: scale(15);
+              opacity: 0;
+            }
+          }
+
+          @keyframes sparkleShoot {
+            0% {
+              transform: scale(0) translateY(0);
+              opacity: 1;
+            }
+            100% {
+              transform: scale(1) translateY(-200px);
+              opacity: 0;
+            }
+          }
+        `}</style>
 
         {/* Content area - waiting or minimal result */}
         <div className="relative flex-1 flex flex-col items-center justify-center px-8 pb-16">
