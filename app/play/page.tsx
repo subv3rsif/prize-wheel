@@ -87,10 +87,15 @@ export default function PlayPage() {
 
         setTimeout(async () => {
           setIsSpinning(false)
+          console.log('🎯 Wheel stopped! Triggering flash animation...')
 
           // Dramatic flash effect when wheel stops
           setShowWinnerFlash(true)
-          setTimeout(() => setShowWinnerFlash(false), 800)
+          console.log('✨ Flash burst activated')
+          setTimeout(() => {
+            setShowWinnerFlash(false)
+            console.log('💫 Flash burst ended')
+          }, 800)
 
           // Show result after dramatic pause
           setTimeout(() => {
@@ -183,33 +188,25 @@ export default function PlayPage() {
 
           {/* Winner flash burst effect */}
           {showWinnerFlash && (
-            <div
-              className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center"
-              style={{
-                animation: 'flashBurst 0.8s ease-out forwards',
-              }}
-            >
+            <div className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center animate-flash-burst">
               {/* Multiple expanding rings */}
               <div
-                className="absolute w-32 h-32 rounded-full"
+                className="absolute w-32 h-32 rounded-full animate-expand-ring"
                 style={{
                   background: 'radial-gradient(circle, rgba(255,215,0,0.8) 0%, rgba(255,215,0,0) 70%)',
-                  animation: 'expandRing 0.8s ease-out forwards',
                 }}
               />
               <div
-                className="absolute w-32 h-32 rounded-full"
+                className="absolute w-32 h-32 rounded-full animate-expand-ring"
                 style={{
                   background: 'radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,215,0,0) 70%)',
-                  animation: 'expandRing 0.8s ease-out forwards',
                   animationDelay: '0.1s',
                 }}
               />
               <div
-                className="absolute w-32 h-32 rounded-full"
+                className="absolute w-32 h-32 rounded-full animate-expand-ring"
                 style={{
                   background: 'radial-gradient(circle, rgba(255,140,0,0.8) 0%, rgba(255,140,0,0) 70%)',
-                  animation: 'expandRing 0.8s ease-out forwards',
                   animationDelay: '0.2s',
                 }}
               />
@@ -220,9 +217,8 @@ export default function PlayPage() {
                 return (
                   <div
                     key={i}
-                    className="absolute w-2 h-2 rounded-full bg-yellow-300"
+                    className="absolute w-2 h-2 rounded-full bg-yellow-300 animate-sparkle-shoot"
                     style={{
-                      animation: `sparkleShoot 0.6s ease-out forwards`,
                       animationDelay: `${i * 0.03}s`,
                       transform: `rotate(${angle}deg)`,
                       boxShadow: '0 0 10px rgba(255,215,0,1)',
@@ -233,36 +229,6 @@ export default function PlayPage() {
             </div>
           )}
         </div>
-
-        <style jsx>{`
-          @keyframes flashBurst {
-            0% { opacity: 0; }
-            20% { opacity: 1; }
-            100% { opacity: 0; }
-          }
-
-          @keyframes expandRing {
-            0% {
-              transform: scale(0);
-              opacity: 1;
-            }
-            100% {
-              transform: scale(15);
-              opacity: 0;
-            }
-          }
-
-          @keyframes sparkleShoot {
-            0% {
-              transform: scale(0) translateY(0);
-              opacity: 1;
-            }
-            100% {
-              transform: scale(1) translateY(-200px);
-              opacity: 0;
-            }
-          }
-        `}</style>
 
         {/* Premium LAUNCH button */}
         <div className="relative flex-1 flex flex-col items-center justify-center px-8 pb-16">
@@ -319,9 +285,9 @@ export default function PlayPage() {
               </>
             )}
 
-            {/* Premium button - enhanced 3D effect */}
+            {/* Premium button - enhanced 3D effect - EXTRA LARGE */}
             <div
-              className={`relative w-64 h-64 md:w-72 md:h-72 rounded-full flex items-center justify-center transition-all duration-300 ${
+              className={`relative w-80 h-80 md:w-96 md:h-96 rounded-full flex items-center justify-center transition-all duration-300 ${
                 isSpinning ? 'scale-95' : 'active:scale-90'
               }`}
               style={{

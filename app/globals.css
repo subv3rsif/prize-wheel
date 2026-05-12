@@ -208,6 +208,47 @@
     animation: confetti-fall-enhanced 3s ease-in forwards;
   }
 
+  /* Flash burst animations for winner reveal */
+  @keyframes flashBurst {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  @keyframes expandRing {
+    0% {
+      transform: scale(0);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(15);
+      opacity: 0;
+    }
+  }
+
+  @keyframes sparkleShoot {
+    0% {
+      transform: scale(0) translateY(0);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1) translateY(-200px);
+      opacity: 0;
+    }
+  }
+
+  .animate-flash-burst {
+    animation: flashBurst 0.8s ease-out forwards;
+  }
+
+  .animate-expand-ring {
+    animation: expandRing 0.8s ease-out forwards;
+  }
+
+  .animate-sparkle-shoot {
+    animation: sparkleShoot 0.6s ease-out forwards;
+  }
+
   /* Slide in from top with bounce */
   @keyframes slide-bounce {
     0% {

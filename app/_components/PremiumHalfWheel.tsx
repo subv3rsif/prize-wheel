@@ -147,6 +147,7 @@ export function PremiumHalfWheel({ segments, isSpinning, targetAngle, spinDurati
             viewBox="0 0 800 800"
             style={{
               filter: 'drop-shadow(0 0 60px rgba(255,215,0,0.5)) drop-shadow(0 20px 80px rgba(0,0,0,0.6))',
+              transformBox: 'fill-box',
             }}
           >
             <defs>
@@ -254,7 +255,8 @@ export function PremiumHalfWheel({ segments, isSpinning, targetAngle, spinDurati
               <g
                 style={{
                   transform: `rotate(${currentRotation}deg)`,
-                  transformOrigin: '400px 400px',
+                  transformOrigin: 'center center',
+                  transformBox: 'fill-box',
                   transition: isSpinning
                     ? `transform ${spinDuration}ms cubic-bezier(0.17, 0.67, 0.12, 0.99)`
                     : 'transform 0.3s ease-out',
