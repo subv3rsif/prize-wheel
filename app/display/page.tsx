@@ -23,6 +23,11 @@ function DisplayContent() {
   const [resultSegment, setResultSegment] = useState<{ label: string; isPrize: boolean } | null>(null)
   const [showWinnerFlash, setShowWinnerFlash] = useState(false)
 
+  // Debug flash state changes
+  useEffect(() => {
+    console.log('[DISPLAY] 🔔 showWinnerFlash state changed:', showWinnerFlash)
+  }, [showWinnerFlash])
+
   const { playTick, playWin, playLoss, stopTick } = useSoundManager()
   const supabase = createClient()
 
@@ -62,6 +67,7 @@ function DisplayContent() {
     channel
       .on('broadcast', { event: 'spin' }, (payload: any) => {
         const { targetAngle: angle, spinDuration: duration, segmentLabel, isPrize } = payload.payload
+        console.log('[DISPLAY] 📡 Received spin broadcast:', { angle, duration, segmentLabel, isPrize })
 
         setIsSpinning(true)
         setTargetAngle(angle)
@@ -75,10 +81,15 @@ function DisplayContent() {
         setTimeout(() => {
           setIsSpinning(false)
           stopTick()
+          console.log('[DISPLAY] 🎯 Wheel stopped! Triggering flash animation...')
 
           // Dramatic flash effect when wheel stops
           setShowWinnerFlash(true)
-          setTimeout(() => setShowWinnerFlash(false), 800)
+          console.log('[DISPLAY] ✨ Flash burst activated')
+          setTimeout(() => {
+            setShowWinnerFlash(false)
+            console.log('[DISPLAY] 💫 Flash burst ended')
+          }, 800)
 
           // Show result after dramatic pause
           setTimeout(() => {

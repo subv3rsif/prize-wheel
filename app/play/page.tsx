@@ -26,6 +26,11 @@ export default function PlayPage() {
   const [showWinnerFlash, setShowWinnerFlash] = useState(false)
   const supabase = createClient()
 
+  // Debug flash state changes
+  useEffect(() => {
+    console.log('🔔 showWinnerFlash state changed:', showWinnerFlash)
+  }, [showWinnerFlash])
+
   // Fetch segments
   useEffect(() => {
     const fetchSegments = async () => {
@@ -109,7 +114,13 @@ export default function PlayPage() {
           }, 600)
 
           // Release the spin lock on server
-          await forceUnlockWheel()
+          console.log('🔓 Releasing spin lock...')
+          const unlockResult = await forceUnlockWheel()
+          if (unlockResult.error) {
+            console.error('❌ Failed to unlock:', unlockResult.error)
+          } else {
+            console.log('✅ Spin lock released successfully')
+          }
         }, duration)
       })
       .subscribe()
@@ -120,17 +131,26 @@ export default function PlayPage() {
   }, [supabase])
 
   const handleSpin = async () => {
-    if (isSpinning) return
+    console.log('🎮 LAUNCH clicked! isSpinning:', isSpinning)
 
+    if (isSpinning) {
+      console.log('⚠️ Already spinning, ignoring click')
+      return
+    }
+
+    console.log('🚀 Starting new spin...')
     setIsSpinning(true)
     const result = await drawPrize()
 
     if (result.error) {
-      console.error('Spin error:', result.error)
+      console.error('❌ Spin error:', result.error)
       if (result.code !== 'CONCURRENT_SPIN') {
         alert(`Erreur: ${result.error}`)
       }
+      console.log('🔄 Resetting isSpinning to false due to error')
       setIsSpinning(false)
+    } else {
+      console.log('✅ drawPrize() successful:', result)
     }
   }
 

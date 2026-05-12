@@ -19,13 +19,25 @@ interface PremiumHalfWheelProps {
 
 export function PremiumHalfWheel({ segments, isSpinning, targetAngle, spinDuration = 6000 }: PremiumHalfWheelProps) {
   const [currentRotation, setCurrentRotation] = useState(0)
+  const [baseRotation, setBaseRotation] = useState(0)
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; delay: number }>>([])
 
   useEffect(() => {
     if (isSpinning) {
-      setCurrentRotation(targetAngle)
+      // Add the new target angle to the existing base rotation for cumulative effect
+      const newRotation = baseRotation + targetAngle
+      setCurrentRotation(newRotation)
+      console.log(`🎡 Spinning: base=${baseRotation}° + target=${targetAngle}° = ${newRotation}°`)
     }
-  }, [isSpinning, targetAngle])
+  }, [isSpinning, targetAngle, baseRotation])
+
+  // Update base rotation when spin finishes
+  useEffect(() => {
+    if (!isSpinning && currentRotation > 0) {
+      setBaseRotation(currentRotation)
+      console.log(`✅ Spin finished. New base rotation: ${currentRotation}°`)
+    }
+  }, [isSpinning, currentRotation])
 
   useEffect(() => {
     // Generate floating particles
